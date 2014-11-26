@@ -1021,7 +1021,7 @@ class ReaderThread(threading.Thread):
 							#else:
 							#	self.signalInterface.send("notification_contactProfilePictureUpdated",(bodyNode.getAttributeValue("jid"), timestamp, msgId, receiptRequested))
 
-							#self.sendNotificationReceived(notificationTo, notificationId, fromJid, participant, notificationType, None)
+							self.sendNotificationReceived(notificationTo, notificationId, fromJid, participant, notificationType, None)
 
 						elif notificationType == "participant":
 							addSubject = None
@@ -1045,12 +1045,12 @@ class ReaderThread(threading.Thread):
 							if removeSubject is not None:
 								self.signalInterface.send("notification_groupParticipantRemoved", (fromAttribute, removeSubject, author, timestamp, msgId, receiptRequested))
 
-							#self.sendNotificationReceived(notificationTo, notificationId, fromJid, participant, notificationType, None)
+							self.sendNotificationReceived(notificationTo, notificationId, fromJid, participant, notificationType, None)
 
 						elif notificationType == "web":
 							self._d("web notification not implemented")
 
-							#self.sendNotificationReceived(fromJid, notificationId, notificationTo, participant, notificationType, None)
+							self.sendNotificationReceived(fromJid, notificationId, notificationTo, participant, notificationType, None)
 
 						elif notificationType == "status":
 							setNode = node.getChild("set")
@@ -1059,7 +1059,7 @@ class ReaderThread(threading.Thread):
 							if status is not None:
 								self.signalInterface.send("contact_statusReceived",(fromJid, status))
 
-							#self.sendNotificationReceived(notificationTo, notificationId, fromJid, participant, notificationType, None)
+							self.sendNotificationReceived(notificationTo, notificationId, fromJid, participant, notificationType, None)
 
 						elif notificationType == "subject":
 							receiptRequested = True;
@@ -1070,7 +1070,7 @@ class ReaderThread(threading.Thread):
 							if newSubject is not None:
 								self.signalInterface.send("group_subjectReceived",(msgId, fromAttribute, author, newSubject, int(attribute_t),  receiptRequested))
 
-							#self.sendNotificationReceived(notificationTo, notificationId, fromJid, participant, notificationType, None)
+							self.sendNotificationReceived(notificationTo, notificationId, fromJid, participant, notificationType, None)
 
 						elif notificationType == "contacts":
 							contactNode = node.getChild("add")
@@ -1078,8 +1078,8 @@ class ReaderThread(threading.Thread):
 							  contactJid = contactNode.getAttributeValue("jid")
 							  self.signalInterface.send("notification_contactAdded", (contactJid, ))
 								
-							  contactsNode = ProtocolTreeNode("sync", {"contacts": "out"})
-							  #self.sendNotificationReceived(fromJid, notificationId, notificationTo, participant, notificationType, contactsNode)
+							contactsNode = ProtocolTreeNode("sync", {"contacts": "out"})
+							self.sendNotificationReceived(fromJid, notificationId, notificationTo, participant, notificationType, contactsNode)
 
 					elif ProtocolTreeNode.tagEquals(node, "receipt"):
 						receiptType = node.getAttributeValue("type");
