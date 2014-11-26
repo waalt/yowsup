@@ -995,6 +995,7 @@ class ReaderThread(threading.Thread):
 						fromJid = node.getAttributeValue("from");
 						timestamp =int(node.getAttributeValue("t"))
 						msgId = node.getAttributeValue("id")
+						participant = None
 							
 						if notificationType == "picture":
 							bodyNode = node.getChild("set")
