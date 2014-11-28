@@ -1051,7 +1051,7 @@ class ReaderThread(threading.Thread):
 						elif notificationType == "web":
 							self._d("web notification not implemented")
 
-							self.sendNotificationReceived(fromJid, notificationId, notificationTo, participant, notificationType, None)
+							self.sendNotificationReceived(notificationTo, notificationId, fromJid, participant, notificationType, None)
 
 						elif notificationType == "status":
 							setNode = node.getChild("set")
@@ -1080,7 +1080,7 @@ class ReaderThread(threading.Thread):
 							  self.signalInterface.send("notification_contactAdded", (contactJid, ))
 								
 							contactsNode = ProtocolTreeNode("sync", {"contacts": "out"})
-							self.sendNotificationReceived(fromJid, notificationId, notificationTo, participant, notificationType, contactsNode)
+							self.sendNotificationReceived(notificationTo, notificationId, fromJid, participant, notificationType, contactsNode)
 
 					elif ProtocolTreeNode.tagEquals(node, "receipt"):
 						receiptType = node.getAttributeValue("type");
