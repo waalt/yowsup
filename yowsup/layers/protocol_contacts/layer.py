@@ -20,7 +20,6 @@ class YowContactsIqProtocolLayer(YowProtocolLayer):
                 self.toUpper(AddContactNotificationProtocolEntity.fromProtocolTreeNode(node))
             elif node.getChild("update"):
                 self.toUpper(UpdateContactNotificationProtocolEntity.fromProtocolTreeNode(node))
-                self.raiseErrorForNode(node)
 
     def recvIq(self, node):
         if node["type"] == "result" and node.getChild("sync"):
