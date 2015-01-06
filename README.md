@@ -1,5 +1,7 @@
 # Yowsup 2.0
 
+<a href="https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=Z9KKEUVYEY6BN" target="_blank"><img src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_LG.gif" /></a>
+
 ## Updates (January 1, 2015) 
 
 Happy new year!
@@ -65,7 +67,7 @@ Install using setup.py to pull all python dependencies
 
 You need to have installed python headers (from probably python-dev package) and ncurses-dev, then run
 ```
-sudo python setup.py install
+python setup.py install
 ```
 Because of a bug with python-dateutil package you might get permission error for some dateutil file called requires.txt when you use yowsup (see [this bug report](https://bugs.launchpad.net/dateutil/+bug/1243202)) to fix you'll need to chmod 644 that file.
 
