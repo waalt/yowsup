@@ -1,8 +1,9 @@
 from yowsup.layers import YowLayer, YowLayerEvent, YowProtocolLayer
 from .protocolentities import ImageDownloadableMediaMessageProtocolEntity
+from .protocolentities import AudioDownloadableMediaMessageProtocolEntity
 from .protocolentities import LocationMediaMessageProtocolEntity
-
 from .protocolentities import VCardMediaMessageProtocolEntity
+
 class YowMediaProtocolLayer(YowProtocolLayer):
     def __init__(self):
         handleMap = {
