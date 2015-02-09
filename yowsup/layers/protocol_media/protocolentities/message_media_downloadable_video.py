@@ -50,7 +50,7 @@ class VideoDownloadableMediaMessageProtocolEntity(DownloadableMediaMessageProtoc
     def setVideoProps(self, abitrate, acodec, asampfmt, asampfreq, duration, encoding, fps, height, preview, seconds, vbitrate, vcodec, width):
         self.abitrate  = abitrate
         self.acodec    = acodec
-        self.asampfreq = asampfmt
+        self.asampfmt  = asampfmt
         self.asampfreq = asampfreq
         self.duration  = duration
         self.encoding  = encoding
