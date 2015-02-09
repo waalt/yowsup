@@ -80,7 +80,7 @@ class VideoDownloadableMediaMessageProtocolEntity(DownloadableMediaMessageProtoc
         mediaNode.setAttribute("seconds",   self.seconds)
         mediaNode.setAttribute("vbitrate",  self.vbitrate)
         mediaNode.setAttribute("vcodec",    self.vcodec)
-        mediaNode.setAttribute("width",     self.vcodec)
+        mediaNode.setAttribute("width",     self.width)
         
         mediaNode.setData(self.preview)
 
