@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 
 class YowAxolotlLayer(YowProtocolLayer):
     EVENT_PREKEYS_SET = "org.openwhatsapp.yowsup.events.axololt.setkeys"
+    EVENT_READY = "org.openwhatsapp.yowsup.events.axololt.ready"
     _STATE_INIT = 0
     _STATE_GENKEYS = 1
     _STATE_HASKEYS = 2
@@ -240,6 +241,7 @@ class YowAxolotlLayer(YowProtocolLayer):
         if fresh:
             self.state = self.__class__._STATE_GENKEYS
             self.broadcastEvent(YowLayerEvent(YowNetworkLayer.EVENT_STATE_DISCONNECT))
+            self.emitEvent(YowLayerEvent(self.__class__.EVENT_READY))
 
     def onSentKeysError(self, errorNode, keysEntity):
         raise Exception("Sent keys were not accepted")
