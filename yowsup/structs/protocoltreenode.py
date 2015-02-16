@@ -60,7 +60,10 @@ class ProtocolTreeNode(object):
                 except UnicodeDecodeError:
                     out += binascii.hexlify(self.data)
             else:
-                out += "%s" % self.data
+                try:
+                    out += "%s" % self.data
+                except UnicodeDecodeError:
+                    out += "[ENCODED DATA]"
 
 
             if type(self.data) is str and sys.version_info >= (3,0):
