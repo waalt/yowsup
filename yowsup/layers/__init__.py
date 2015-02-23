@@ -114,7 +114,7 @@ class YowProtocolLayer(YowLayer):
         return "-" in jid
 
     def raiseErrorForNode(self, node):
-        raise ValueError("Unimplemented notification type %s " % node)
+        logger.warn("Unimplemented notification type %s " % node)
 
 
     def _sendIq(self, iqEntity, onSuccess = None, onError = None):
