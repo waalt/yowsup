@@ -11,10 +11,8 @@ class YowProfilesProtocolLayer(YowProtocolLayer):
         return "Profiles Layer"
 
     def sendIq(self, entity):
-        if entity.getXmlns() == "w:profile:picture":
+        if entity.getXmlns() in ["w:profile:picture", "status"]:
             self.toLower(entity.toProtocolTreeNode())
-        else:
-            self.toLower(entity)
 
     def recvIq(self, node):
         if node["type"] == "result":
