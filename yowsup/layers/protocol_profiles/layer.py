@@ -1,4 +1,5 @@
 from yowsup.layers import  YowProtocolLayer
+from yowsup.layers.protocol_iq.protocolentities import ErrorIqProtocolEntity
 from .protocolentities import *
 class YowProfilesProtocolLayer(YowProtocolLayer):
     def __init__(self):
@@ -11,13 +12,18 @@ class YowProfilesProtocolLayer(YowProtocolLayer):
         return "Profiles Layer"
 
     def sendIq(self, entity):
-        if entity.getXmlns() in ["w:profile:picture", "status"]:
+        if entity.getXmlns() == "w:profile:picture":
             self.toLower(entity.toProtocolTreeNode())
+        elif entity.getXmlns() == "status":
+            self.entityToLower(entity)
 
     def recvIq(self, node):
         if node["type"] == "result":
             pictureNode = node.getChild("picture")
             if pictureNode is not None:
-                entity = PictureIqProtocolEntity.fromProtocolTreeNode(node)
+                entity = ResultGetPictureIqProtocolEntity.fromProtocolTreeNode(node)
                 self.toUpper(entity)
+        elif node["type"] == "error":
+            entity = ErrorIqProtocolEntity.fromProtocolTreeNode(node)
+            self.toUpper(entity)
 

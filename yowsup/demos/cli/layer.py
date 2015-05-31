@@ -16,7 +16,6 @@ from yowsup.layers.protocol_acks.protocolentities        import *
 from yowsup.layers.protocol_ib.protocolentities          import *
 from yowsup.layers.protocol_iq.protocolentities          import *
 from yowsup.layers.protocol_contacts.protocolentities    import *
-from yowsup.layers.protocol_profiles.protocolentities    import *
 from yowsup.layers.protocol_chatstate.protocolentities   import *
 from yowsup.layers.protocol_privacy.protocolentities     import *
 from yowsup.layers.protocol_media.protocolentities       import *
@@ -24,6 +23,7 @@ from yowsup.layers.protocol_media.mediauploader import MediaUploader
 from yowsup.layers.protocol_profiles.protocolentities    import *
 from yowsup.layers.axolotl.protocolentities.iq_key_get import GetKeysIqProtocolEntity
 from yowsup.layers.axolotl import YowAxolotlLayer
+from yowsup.common.tools import ModuleTools
 
 logger = logging.getLogger(__name__)
 
@@ -169,11 +169,39 @@ class YowsupCliLayer(Cli, YowInterfaceLayer):
     ######################################
 
     ####### contacts/ profiles ####################
+    @clicmd("Set status text")
+    def status_set(self, text):
+        if self.assertConnected():
+            entity = SetStatusIqProtocolEntity(text)
+            self.toLower(entity)
+
     @clicmd("Get profile picture for contact")
     def contact_picture(self, jid):
         if self.assertConnected():
-            entity = PictureIqProtocolEntity(self.aliasToJid(jid))
-            self.toLower(entity)
+            entity = GetPictureIqProtocolEntity(self.aliasToJid(jid), preview=False)
+            self._sendIq(entity, self.onGetContactPictureResult)
+
+    @clicmd("Get profile picture preview for contact")
+    def contact_picturePreview(self, jid):
+        if self.assertConnected():
+            entity = GetPictureIqProtocolEntity(self.aliasToJid(jid), preview=True)
+            self._sendIq(entity, self.onGetContactPictureResult)
+
+    @clicmd("Set profile picture")
+    def profile_setPicture(self, path):
+        if ModuleTools.INSTALLED_PIL():
+            #example by @aesedepece in https://github.com/tgalal/yowsup/pull/781
+            #modified to support python3
+            from PIL import Image
+            src = Image.open(path)
+            pictureData = src.resize((640, 640)).tobytes("jpeg", "RGB")
+            picturePreview = src.resize((96, 96)).tobytes("jpeg", "RGB")
+            iq = SetPictureIqProtocolEntity(self.getOwnJid(), picturePreview, pictureData)
+            self.toLower(iq)
+        else:
+            logger.error("Python PIL library is not installed, can't set profile picture")
+
+    ########### groups
 
     @clicmd("List all groups you belong to", 5)
     def groups_list(self):
@@ -195,12 +223,20 @@ class YowsupCliLayer(Cli, YowInterfaceLayer):
             self.toLower(entity)
 
     @clicmd("Invite to group")
-    def group_invite(self, group_jid, jid):
+    def group_invite(self, group_jid, jids):
         if self.assertConnected():
-            entity = AddParticipantsIqProtocolEntity(self.aliasToJid(group_jid), self.aliasToJid(jid))
+            jids = [self.aliasToJid(jid) for jid in jids.split(',')]
+            entity = AddParticipantsIqProtocolEntity(self.aliasToJid(group_jid), jids)
             self.toLower(entity)
 
-    @clicmd("Get pariticipants in a group")
+    @clicmd("Kick from group")
+    def group_kick(self, group_jid, jids):
+        if self.assertConnected():
+            jids = [self.aliasToJid(jid) for jid in jids.split(',')]
+            entity = RemoveParticipantsIqProtocolEntity(self.aliasToJid(group_jid), jids)
+            self.toLower(entity)
+
+    @clicmd("Get participants in a group")
     def group_participants(self, group_jid):
         if self.assertConnected():
             entity = ParticipantsGroupsIqProtocolEntity(self.aliasToJid(group_jid))
@@ -212,10 +248,17 @@ class YowsupCliLayer(Cli, YowInterfaceLayer):
             entity = SubjectGroupsIqProtocolEntity(self.aliasToJid(jid), subject)
             self.toLower(entity)
 
-    @clicmd("Get shared keys")
-    def keys_get(self, jid):
+    @clicmd("Get group info")
+    def group_info(self, group_jid):
         if self.assertConnected():
-            entity = GetKeysIqProtocolEntity(self.aliasToJid(jid))
+            entity = InfoGroupsIqProtocolEntity(self.aliasToJid(group_jid))
+            self.toLower(entity)
+
+    @clicmd("Get shared keys")
+    def keys_get(self, jids):
+        if self.assertConnected():
+            jids = [self.aliasToJid(jid) for jid in jids.split(',')]
+            entity = GetKeysIqProtocolEntity(jids)
             self.toLower(entity)
 
     @clicmd("Send prekeys")
@@ -329,7 +372,7 @@ class YowsupCliLayer(Cli, YowInterfaceLayer):
 
     @ProtocolEntityCallback("receipt")
     def onReceipt(self, entity):
-        ack = OutgoingAckProtocolEntity(entity.getId(), "receipt", "delivery")
+        ack = OutgoingAckProtocolEntity(entity.getId(), "receipt", entity.getType(), entity.getFrom())
         self.toLower(ack)
 
     @ProtocolEntityCallback("ack")
@@ -376,8 +419,9 @@ class YowsupCliLayer(Cli, YowInterfaceLayer):
 
 
         formattedDate = datetime.datetime.fromtimestamp(message.getTimestamp()).strftime('%d-%m-%Y %H:%M')
+        sender = message.getFrom() if not message.isGroupMessage() else "%s/%s" % (message.getParticipant(False), message.getFrom())
         output = self.__class__.MESSAGE_FORMAT.format(
-            FROM = message.getFrom(),
+            FROM = sender,
             TIME = formattedDate,
             MESSAGE = messageOut.encode('latin-1').decode() if sys.version_info >= (3, 0) else messageOut,
             MESSAGE_ID = message.getId()
@@ -440,6 +484,15 @@ class YowsupCliLayer(Cli, YowInterfaceLayer):
     def onUploadProgress(self, filePath, jid, url, progress):
         sys.stdout.write("%s => %s, %d%% \r" % (os.path.basename(filePath), jid, progress))
         sys.stdout.flush()
+
+    def onGetContactPictureResult(self, resultGetPictureIqProtocolEntiy, getPictureIqProtocolEntity):
+        # do here whatever you want
+        # write to a file
+        # or open
+        # or do nothing
+        # write to file example:
+        #resultGetPictureIqProtocolEntiy.writeToFile("/tmp/yowpics/%s_%s.jpg" % (getPictureIqProtocolEntity.getTo(), "preview" if resultGetPictureIqProtocolEntiy.isPreview() else "full"))
+        pass
 
     def __str__(self):
         return "CLI Interface Layer"

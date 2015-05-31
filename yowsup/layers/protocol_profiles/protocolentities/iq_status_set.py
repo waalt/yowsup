@@ -7,18 +7,17 @@ class SetStatusIqProtocolEntity(IqProtocolEntity):
         <status>{{MSG}}</status>
     </notification>
     '''
-
-    def __init__(self, msg = None):
-        super(SetStatusIqProtocolEntity, self).__init__(xmlns = "status", 
-            _type = "set", to = "s.whatsapp.net")
-        self.setData(msg)
+    XMLNS = "status"
+    def __init__(self, text = None, _id = None):
+        super(SetStatusIqProtocolEntity, self).__init__(self.__class__.XMLNS, _id, _type = "set", to = "s.whatsapp.net")
+        self.setData(text)
         
-    def setData(self, msg):
-        self.msg = msg
+    def setData(self, text):
+        self.text = text
 
     def toProtocolTreeNode(self):
         node = super(SetStatusIqProtocolEntity, self).toProtocolTreeNode()
-        statusNode = ProtocolTreeNode("status", {}, [], self.msg)
+        statusNode = ProtocolTreeNode("status", {}, [], self.text)
         node.addChild(statusNode)
         return node
 
