@@ -27,4 +27,3 @@ class YowProfilesProtocolLayer(YowProtocolLayer):
             entity = ErrorIqProtocolEntity.fromProtocolTreeNode(node)
             self.toUpper(entity)
 
-
