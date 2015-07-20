@@ -8,7 +8,7 @@ class MessageProtocolEntity(ProtocolEntity):
     MESSAGE_TYPE_MEDIA = "media"
 
     def __init__(self, _type, _id = None,  _from = None, to = None, notify = None, timestamp = None, 
-        participant = None, offline = None, retry = None):
+        participant = None, offline = None, retry = None, broadcast = None):
 
         assert (to or _from), "Must specify either to or _from jids to create the message"
         assert not(to and _from), "Can't set both attributes to message at same time (to, _from)"
@@ -24,6 +24,7 @@ class MessageProtocolEntity(ProtocolEntity):
         self.offline        = offline == "1" if offline is not None else offline
         self.retry          = int(retry) if retry else None
         self.participant    = participant
+        self.broadcast    = broadcast
 
     def getType(self):
         return self._type
@@ -38,7 +39,7 @@ class MessageProtocolEntity(ProtocolEntity):
         return self._from if full else self._from.split('@')[0]
 
     def isBroadcast(self):
-        return False
+        return self.broadcast
 
     def getTo(self, full = True):
         return self.to if full else self.to.split('@')[0]
@@ -73,6 +74,8 @@ class MessageProtocolEntity(ProtocolEntity):
             attribs["retry"] = str(self.retry)
         if self.participant:
             attribs["participant"] = self.participant
+        if self.broadcast:
+            attribs["broadcast"] = self.broadcast
 
 
         xNode = None
@@ -99,6 +102,8 @@ class MessageProtocolEntity(ProtocolEntity):
         out += "Timestamp: %s\n" % self.timestamp
         if self.participant:
             out += "Participant: %s\n" % self.participant
+        if self.broadcast:
+            out += "Broadcast: %s\n" % self.broadcast
         return out
 
     def ack(self, read=False):
@@ -124,5 +129,6 @@ class MessageProtocolEntity(ProtocolEntity):
             node.getAttributeValue("t"),
             node.getAttributeValue("participant"),
             node.getAttributeValue("offline"),
-            node.getAttributeValue("retry")
+            node.getAttributeValue("retry"),
+            "@broadcast" in node.getAttributeValue("from") if node.getAttributeValue("from") else "@broadcast" in node.getAttributeValue("to")
             )
