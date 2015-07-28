@@ -39,7 +39,7 @@ class GetSyncIqProtocolEntity(SyncIqProtocolEntity):
     def setGetSyncProps(self, numbers, mode, context):
         assert type(numbers) is list, "numbers must be a list"
         assert mode in self.__class__.MODES, "mode must be in %s" % self.__class__.MODES
-        assert context in self.__class__.CONTEXTS, "context must be in %s" % self.__class__.CONTEXTS
+        assert context in self.__class__.CONTEXTS, "context must be in ${0}".format(self.__class__.CONTEXTS)
 
         self.numbers = numbers
         self.mode = mode

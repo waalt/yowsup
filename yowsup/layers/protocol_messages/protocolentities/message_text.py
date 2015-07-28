@@ -35,5 +35,5 @@ class TextMessageProtocolEntity(MessageProtocolEntity):
     def fromProtocolTreeNode(node):
         entity = MessageProtocolEntity.fromProtocolTreeNode(node)
         entity.__class__ = TextMessageProtocolEntity
-        entity.setBody(node.getChild("body").getData())
+        entity.setBody(node.getChild("body").getData() if node.getChild("body") else "[Could not decrypt]")
         return entity
