@@ -8,8 +8,9 @@ class GetSyncIqProtocolEntity(SyncIqProtocolEntity):
     MODE_DELTA = "delta"
     CONTEXT_REGISTRATION = "registration"
     CONTEXT_INTERACTIVE = "interactive"
+    CONTEXT_BACKGROUND = "background"
 
-    CONTEXTS = (CONTEXT_REGISTRATION, CONTEXT_INTERACTIVE)
+    CONTEXTS = (CONTEXT_REGISTRATION, CONTEXT_INTERACTIVE, CONTEXT_BACKGROUND)
     MODES = (MODE_FULL, MODE_DELTA)
 
 
@@ -53,7 +54,7 @@ class GetSyncIqProtocolEntity(SyncIqProtocolEntity):
         return out
 
     def toProtocolTreeNode(self):
-        
+
         users = [ProtocolTreeNode("user", {}, None, number) for number in self.numbers]
 
         node = super(GetSyncIqProtocolEntity, self).toProtocolTreeNode()
@@ -76,5 +77,5 @@ class GetSyncIqProtocolEntity(SyncIqProtocolEntity):
             syncNode.getAttributeValue("mode"),
             syncNode.getAttributeValue("context"),
             )
-   
+
         return entity
