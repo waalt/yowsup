@@ -7,7 +7,7 @@ class MessageProtocolEntity(ProtocolEntity):
     MESSAGE_TYPE_TEXT = "text"
     MESSAGE_TYPE_MEDIA = "media"
 
-    def __init__(self, _type, _id = None,  _from = None, to = None, notify = None, timestamp = None, 
+    def __init__(self, _type, _id = None,  _from = None, to = None, notify = None, timestamp = None,
         participant = None, offline = None, retry = None, broadcast = None):
 
         assert (to or _from), "Must specify either to or _from jids to create the message"
@@ -49,33 +49,28 @@ class MessageProtocolEntity(ProtocolEntity):
 
     def getNotify(self):
         return self.notify
-    
+
     def toProtocolTreeNode(self):
         attribs = {
             "type"      : self._type,
             "id"        : self._id,
         }
 
-        if not self.isOutgoing():
-            attribs["t"] = str(self.timestamp)
-
-        if self.offline is not None:
-            attribs["offline"] = "1" if self.offline else "0"
-
         if self.isOutgoing():
             attribs["to"] = self.to
         else:
             attribs["from"] = self._from
 
-        if self.notify:
-            attribs["notify"] = self.notify
+            attribs["t"] = str(self.timestamp)
 
-        if self.retry:
-            attribs["retry"] = str(self.retry)
-        if self.participant:
-            attribs["participant"] = self.participant
-        if self.broadcast:
-            attribs["broadcast"] = self.broadcast
+            if self.offline is not None:
+               attribs["offline"] = "1" if self.offline else "0"
+            if self.notify:
+                attribs["notify"] = self.notify
+            if self.retry:
+                attribs["retry"] = str(self.retry)
+            if self.participant:
+                attribs["participant"] = self.participant
 
 
         xNode = None
@@ -97,7 +92,7 @@ class MessageProtocolEntity(ProtocolEntity):
     def __str__(self):
         out  = "Message:\n"
         out += "ID: %s\n" % self._id
-        out += "To: %s\n" % self.to  if self.isOutgoing() else "From: %s\n" % self._from 
+        out += "To: %s\n" % self.to  if self.isOutgoing() else "From: %s\n" % self._from
         out += "Type:  %s\n" % self._type
         out += "Timestamp: %s\n" % self.timestamp
         if self.participant:
@@ -114,14 +109,13 @@ class MessageProtocolEntity(ProtocolEntity):
         OutgoingMessage.to = to
         OutgoingMessage._from = None
         OutgoingMessage._id = self._generateId() if _id is None else _id
-        OutgoingMessage.participant = None # very strange issue with group messages otherwise
         return OutgoingMessage
 
     @staticmethod
     def fromProtocolTreeNode(node):
 
         return MessageProtocolEntity(
-            node.getAttributeValue("type"), 
+            node.getAttributeValue("type"),
             node.getAttributeValue("id"),
             node.getAttributeValue("from"),
             node.getAttributeValue("to"),
