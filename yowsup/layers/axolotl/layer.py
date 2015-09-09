@@ -25,13 +25,14 @@ from axolotl.nosessionexception import NoSessionException
 from axolotl.untrustedidentityexception import UntrustedIdentityException
 from .protocolentities.receipt_outgoing_retry import RetryOutgoingReceiptProtocolEntity
 import binascii
-import sys
+import sys, time
 
 import logging
 logger = logging.getLogger(__name__)
 
 class YowAxolotlLayer(YowProtocolLayer):
     EVENT_PREKEYS_SET = "org.openwhatsapp.yowsup.events.axololt.setkeys"
+    EVENT_READY = "org.openwhatsapp.yowsup.events.axolotl.ready"
     _STATE_INIT = 0
     _STATE_GENKEYS = 1
     _STATE_HASKEYS = 2
@@ -92,13 +93,15 @@ class YowAxolotlLayer(YowProtocolLayer):
             if yowLayerEvent.getArg("passive") and self.isInitState():
                 logger.info("Axolotl layer is generating keys")
                 self.sendKeys()
-        '''elif yowLayerEvent.getName() == YowNetworkLayer.EVENT_STATE_DISCONNECTED:
+        elif yowLayerEvent.getName() == YowNetworkLayer.EVENT_STATE_DISCONNECTED:
             if self.isGenKeysState():
+                logger.info("Disconnected after sending keys")
                 #we requested this disconnect in this layer to switch off passive
                 #no need to traverse it to upper layers?
                 self.setProp(YowAuthenticationProtocolLayer.PROP_PASSIVE, False)
                 self.state = self.__class__._STATE_HASKEYS
-                self.getLayerInterface(YowNetworkLayer).connect()
+                #self.getLayerInterface(YowNetworkLayer).connect()
+                self.emitEvent(YowLayerEvent(self.__class__.EVENT_READY))
             else:
                 self.store = None
 
@@ -222,7 +225,6 @@ class YowAxolotlLayer(YowProtocolLayer):
                 self.handlePreKeyWhisperMessage(node)
             else:
                 self.handleWhisperMessage(node)
-
         except InvalidMessageException as e:
             # logger.error("Invalid message from %s!! Your axololtl database data might be inconsistent with WhatsApp, or with what that contact has" % node["from"])
             # sys.exit(1)
@@ -254,14 +256,10 @@ class YowAxolotlLayer(YowProtocolLayer):
 
     def handlePreKeyWhisperMessage(self, node):
         pkMessageProtocolEntity = EncryptedMessageProtocolEntity.fromProtocolTreeNode(node)
-        
-        try:
-          preKeyWhisperMessage = PreKeyWhisperMessage(serialized=pkMessageProtocolEntity.getEncData())
-          sessionCipher = self.getSessionCipher(pkMessageProtocolEntity.getFrom(False))
-          plaintext = sessionCipher.decryptPkmsg(preKeyWhisperMessage)
-        except:
-          logger.error("No such signedPreKey from %s!!" % node["from"])
-          plaintext = "[Could not decrypt]"
+
+        preKeyWhisperMessage = PreKeyWhisperMessage(serialized=pkMessageProtocolEntity.getEncData())
+        sessionCipher = self.getSessionCipher(pkMessageProtocolEntity.getFrom(False))
+        plaintext = sessionCipher.decryptPkmsg(preKeyWhisperMessage)
 
         if pkMessageProtocolEntity.getVersion() == 2:
             plaintext = self.unpadV2Plaintext(plaintext)
@@ -274,16 +272,9 @@ class YowAxolotlLayer(YowProtocolLayer):
     def handleWhisperMessage(self, node):
         encMessageProtocolEntity = EncryptedMessageProtocolEntity.fromProtocolTreeNode(node)
 
-        try:
-          whisperMessage = WhisperMessage(serialized=encMessageProtocolEntity.getEncData())
-          sessionCipher = self.getSessionCipher(encMessageProtocolEntity.getFrom(False))
-          plaintext = sessionCipher.decryptMsg(whisperMessage)
-        except DuplicateMessageException:
-          logger.error("Duplicate message from %s!!" % node["from"])
-          plaintext = "[Could not decrypt]"
-        except NoSessionException:
-          logger.error("No session for %s!!" % node["from"])
-          plaintext = "[Could not decrypt]"
+        whisperMessage = WhisperMessage(serialized=encMessageProtocolEntity.getEncData())
+        sessionCipher = self.getSessionCipher(encMessageProtocolEntity.getFrom(False))
+        plaintext = sessionCipher.decryptMsg(whisperMessage)
 
         if encMessageProtocolEntity.getVersion() == 2:
             plaintext = self.unpadV2Plaintext(plaintext)
@@ -343,9 +334,6 @@ class YowAxolotlLayer(YowProtocolLayer):
         if fresh:
             self.state = self.__class__._STATE_GENKEYS
             self.broadcastEvent(YowLayerEvent(YowNetworkLayer.EVENT_STATE_DISCONNECT))
-            self.setProp(YowAuthenticationProtocolLayer.PROP_PASSIVE, False)
-            self.state = self.__class__._STATE_HASKEYS
-            self.broadcastEvent(YowLayerEvent(YowNetworkLayer.EVENT_STATE_CONNECT))
 
     def onSentKeysError(self, errorNode, keysEntity):
         raise Exception("Sent keys were not accepted")
