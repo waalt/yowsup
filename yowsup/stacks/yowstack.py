@@ -34,7 +34,7 @@ YOWSUP_PROTOCOL_LAYERS_BASIC = (
     YowAuthenticationProtocolLayer, YowMessagesProtocolLayer,
     YowReceiptProtocolLayer, YowAckProtocolLayer, YowPresenceProtocolLayer,
     YowIbProtocolLayer, YowIqProtocolLayer, YowNotificationsProtocolLayer,
-    YowContactsIqProtocolLayer, YowChatstateProtocolLayer, YowCallsProtocolLayer
+    YowContactsIqProtocolLayer, YowChatstateProtocolLayer
 
 )
 

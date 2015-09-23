@@ -7,7 +7,7 @@ class MessageProtocolEntity(ProtocolEntity):
     MESSAGE_TYPE_TEXT = "text"
     MESSAGE_TYPE_MEDIA = "media"
 
-    def __init__(self, _type, _id = None,  _from = None, to = None, notify = None, timestamp = None,
+    def __init__(self, _type, _id = None,  _from = None, to = None, notify = None, timestamp = None, 
         participant = None, offline = None, retry = None, broadcast = None):
 
         assert (to or _from), "Must specify either to or _from jids to create the message"
@@ -49,7 +49,7 @@ class MessageProtocolEntity(ProtocolEntity):
 
     def getNotify(self):
         return self.notify
-
+    
     def toProtocolTreeNode(self):
         attribs = {
             "type"      : self._type,
@@ -92,7 +92,7 @@ class MessageProtocolEntity(ProtocolEntity):
     def __str__(self):
         out  = "Message:\n"
         out += "ID: %s\n" % self._id
-        out += "To: %s\n" % self.to  if self.isOutgoing() else "From: %s\n" % self._from
+        out += "To: %s\n" % self.to  if self.isOutgoing() else "From: %s\n" % self._from 
         out += "Type:  %s\n" % self._type
         out += "Timestamp: %s\n" % self.timestamp
         if self.participant:
@@ -115,7 +115,7 @@ class MessageProtocolEntity(ProtocolEntity):
     def fromProtocolTreeNode(node):
 
         return MessageProtocolEntity(
-            node.getAttributeValue("type"),
+            node.getAttributeValue("type"), 
             node.getAttributeValue("id"),
             node.getAttributeValue("from"),
             node.getAttributeValue("to"),
